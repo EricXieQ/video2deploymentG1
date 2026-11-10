@@ -136,7 +136,7 @@ Then rename the top-level key of the copied `config.yaml` to `g1/asap_my_motion:
 ## Step 9. rl_sar integration
 
 - New folder `$RL_SAR_ROOT/policy/g1/asap_my_motion/` with `policy.pt`, `config.yaml` and a README (checkpoint path, sha256, scores).
-- **Code change needed:** the motion length is compiled into the dab state (`fsm_g1.hpp`, `rl.motion_length = 5.93f`). See `deploy/FSM_INTEGRATION.md`.
+- Set `motion_length` in that `config.yaml` to the clip's `(frames - 1) / 30` seconds (the "length" line of `check_reference.py`) and select the folder with `RL_DAB_POLICY=asap_my_motion`. This needs an rl_sar build with the config-driven length; on the pinned 314b2cb it is still compiled in as 5.93 s. See `deploy/FSM_INTEGRATION.md`.
 - Rebuild with `cmake --build cmake_build --target rl_sim_mujoco`.
 
 ## Step 10. MuJoCo gate (sim2sim)
@@ -145,7 +145,7 @@ Then rename the top-level key of the copied `config.yaml` to `g1/asap_my_motion:
 cd $RL_SAR_ROOT && ./cmake_build/bin/rl_sim_mujoco g1 scene_29dof
 # keys: 0, wait about 3 s, R, 1 (walking), wait 4.5 to 6 s, then the motion's key
 ```
-Repeat 10 or more times, quitting and relaunching for clean trials. Score with rl_sar's `scripts/score_dab_session.py`, but set new time windows: its `WIN_RAISE`, `WIN_LEAN` and `DAB_END_S` are dab-specific.
+Repeat 10 or more times, quitting and relaunching for clean trials. Score with rl_sar's `scripts/score_dab_session.py`. Its default windows are the dab's; with the config-driven-length rl_sar commit, pass `--motion-length <s> --win-raise <a> <b> --win-lean <a> <b>` for another motion.
 
 - **Pass ("the bar"):** feet planted in all or nearly all trials (no lift of 1 cm or more for 80 ms after the first 0.5 s), endpoint heading within a few degrees, no abort, and the return to walking also planted. "Never falls" is not enough: it once hid a policy that stepped and turned 90 degrees.
 - Use `scene_29dof` for scoring; the `hoist2` ropes cause a left-knee buzz.
