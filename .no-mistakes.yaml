@@ -1,0 +1,7 @@
+# Per-repo no-mistakes overrides.
+#
+# The test step runs the repository's own fast, CPU-only checks instead of asking
+# an agent to invent tests. Note: no-mistakes honours `commands` from the
+# default-branch copy of this file, so this takes effect once it is on main.
+commands:
+  test: 'bash tests/run_tests.sh'

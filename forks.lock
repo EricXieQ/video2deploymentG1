@@ -1,0 +1,12 @@
+# Exact commits this project was built and tested against.
+# setup/bootstrap.sh reads this file. One repository per line:
+#   name  url  ref  commit
+# `ref` is a branch or tag, for humans; `commit` is what gets checked out.
+#
+# asap   : ASAP (HumanoidVerse) fork with the dab training recipe (off-trajectory entry,
+#          ankle penalty, reward files, PPO NaN guard and learning-rate cap). MIT.
+# rl_sar : rl_sar fork with the G1 FSM, the dab state and the Jetson deploy path. Apache-2.0.
+# tram   : TRAM upstream (video -> SMPL). MIT; its third-party models have their own licences.
+asap    https://github.com/EricXieQ/ASAP.git                     dab-v6-recipe   af60acf36c854343dcd64a43251fa9cf0c811d63
+rl_sar  https://github.com/EricXieQ/rl_sar_g1_deployment.git     jetson-deploy   314b2cbc71359e81cb7757d4b64b7a39e14bedf0
+tram    https://github.com/yufu-wang/tram.git                    main            4861c112f3c148201326680a50c9199650da6088
