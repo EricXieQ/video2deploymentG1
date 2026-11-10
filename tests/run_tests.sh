@@ -37,16 +37,17 @@ export LD_LIBRARY_PATH="${py_prefix}/lib:${LD_LIBRARY_PATH:-}"
 unset DISPLAY
 echo "python: $PY"
 
+fail=0
 echo "== shell syntax"
 while IFS= read -r f; do
-  bash -n "$f" && echo "ok  $f"
+  if bash -n "$f"; then echo "ok  $f"; else echo "FAIL $f"; fail=1; fi
 done < <(git ls-files '*.sh')
 
 echo "== python byte-compile"
 tmp_pyc="$(mktemp -d)"
 trap 'rm -rf "$tmp_pyc"' EXIT
 while IFS= read -r f; do
-  PYTHONPYCACHEPREFIX="$tmp_pyc" "$PY" -m py_compile "$f" && echo "ok  $f"
+  if PYTHONPYCACHEPREFIX="$tmp_pyc" "$PY" -m py_compile "$f"; then echo "ok  $f"; else echo "FAIL $f"; fail=1; fi
 done < <(git ls-files '*.py')
 
 echo "== pinned ASAP robot model"
@@ -81,4 +82,7 @@ else
 fi
 
 echo "== unit tests"
-PYTHONDONTWRITEBYTECODE=1 "$PY" -m unittest discover -s tests -p 'test_*.py' -v
+rc=0
+PYTHONDONTWRITEBYTECODE=1 "$PY" -m unittest discover -s tests -p 'test_*.py' -v || rc=$?
+(( fail == 0 )) || echo "FAIL: shell syntax or python byte-compile check failed (see above)" >&2
+exit $(( rc || fail ))

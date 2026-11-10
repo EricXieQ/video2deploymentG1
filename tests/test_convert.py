@@ -2,8 +2,10 @@
 
 The real regression check (re-converting a TRAM result and comparing the npz
 byte for byte) needs TRAM output that is not in this repository; set
-TRAM_RESULTS and CONVERT_EXPECTED_NPZ_DIR to run it. This test checks the
-conversion's documented behaviour on made-up input.
+TRAM_RESULTS and CONVERT_EXPECTED_NPZ_DIR to run it, and CONVERT_PYTHON to the
+`tram` env's python (TRAM saves its results with numpy 2, which the `hvgym`
+Python running these tests cannot load). The other tests check the conversion's
+documented behaviour on made-up input.
 """
 
 import os
@@ -18,26 +20,29 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ROOT, "capture", "convert_tram_to_asap.py")
 
 
-def convert(*args):
+def convert(*args, python=sys.executable):
     env = {k: v for k, v in os.environ.items() if k not in ("ASAP_ROOT", "TRAM_ROOT")}
-    return subprocess.run([sys.executable, SCRIPT, *args], capture_output=True, text=True, env=env)
+    return subprocess.run([python, SCRIPT, *args], capture_output=True, text=True, env=env)
+
+
+def write_track(results, name, n):
+    hps = os.path.join(results, name, "hps")
+    os.makedirs(hps)
+    rot = np.tile(np.eye(3, dtype=np.float32), (n, 24, 1, 1))
+    trans = np.zeros((n, 1, 3), dtype=np.float32)
+    trans[:, 0, 0] = 0.3                                  # camera X (sideways)
+    trans[:, 0, 1] = -np.linspace(0.0, 0.1, n)            # camera Y is down: body rises
+    trans[:, 0, 2] = 4.0                                  # depth
+    shape = np.arange(10, dtype=np.float32)[None].repeat(n, 0)
+    np.save(os.path.join(hps, "hps_track_0.npy"),
+            {"pred_rotmat": rot, "pred_shape": shape, "pred_trans": trans}, allow_pickle=True)
 
 
 class Convert(unittest.TestCase):
     def test_synthetic_track(self):
         n = 12
         with tempfile.TemporaryDirectory() as tmp:
-            hps = os.path.join(tmp, "results", "clip", "hps")
-            os.makedirs(hps)
-            rot = np.tile(np.eye(3, dtype=np.float32), (n, 24, 1, 1))
-            trans = np.zeros((n, 1, 3), dtype=np.float32)
-            trans[:, 0, 0] = 0.3                                  # camera X (sideways)
-            trans[:, 0, 1] = -np.linspace(0.0, 0.1, n)            # camera Y is down: body rises
-            trans[:, 0, 2] = 4.0                                  # depth
-            shape = np.arange(10, dtype=np.float32)[None].repeat(n, 0)
-            np.save(os.path.join(hps, "hps_track_0.npy"),
-                    {"pred_rotmat": rot, "pred_shape": shape, "pred_trans": trans}, allow_pickle=True)
-
+            write_track(os.path.join(tmp, "results"), "clip", n)
             out = os.path.join(tmp, "out")
             res = convert("clip", "--fps", "60", "--smooth", "0",
                           "--tram-results", os.path.join(tmp, "results"), "--out-dir", out)
@@ -57,8 +62,11 @@ class Convert(unittest.TestCase):
             np.testing.assert_array_equal(d["poses"][:, 3:], 0)
 
     def test_missing_out_dir_is_an_error(self):
-        res = convert("clip", "--tram-results", "/nonexistent")
-        self.assertNotEqual(res.returncode, 0)
+        with tempfile.TemporaryDirectory() as tmp:
+            write_track(os.path.join(tmp, "results"), "clip", 4)
+            res = convert("clip", "--tram-results", os.path.join(tmp, "results"))
+        self.assertEqual(res.returncode, 2, res.stdout + res.stderr)
+        self.assertIn("--out-dir", res.stderr)
 
     @unittest.skipUnless(os.environ.get("TRAM_RESULTS") and os.environ.get("CONVERT_EXPECTED_NPZ_DIR"),
                          "TRAM results are not in this repository")
@@ -68,7 +76,8 @@ class Convert(unittest.TestCase):
             for name in [f[:-len("_amass.npz")] for f in sorted(os.listdir(exp)) if f.endswith("_amass.npz")]:
                 if not os.path.isdir(os.path.join(os.environ["TRAM_RESULTS"], name)):
                     continue
-                res = convert(name, "--tram-results", os.environ["TRAM_RESULTS"], "--out-dir", tmp)
+                res = convert(name, "--tram-results", os.environ["TRAM_RESULTS"], "--out-dir", tmp,
+                              python=os.environ.get("CONVERT_PYTHON", sys.executable))
                 self.assertEqual(res.returncode, 0, res.stderr)
                 a, b = np.load(os.path.join(tmp, f"{name}_amass.npz")), np.load(os.path.join(exp, f"{name}_amass.npz"))
                 for k in b.files:
