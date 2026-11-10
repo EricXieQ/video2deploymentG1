@@ -18,7 +18,7 @@ This repository holds the scripts, configurations and notes that glue together t
  TRAM            estimate_camera.py -> estimate_humans.py -> visualize_tram.py     (env: tram)
      |           out: tram/results/<name>/hps/hps_track_0.npy            ~2.5 min per clip
      v
- CONVERT         capture/convert_tram_to_asap.py <name> --fps 30
+ CONVERT         capture/convert_tram_to_asap.py <name> --fps 30 --out-dir /tmp/<name>_npz
      |           out: <name>_amass.npz (SMPL poses, shape, height)        seconds
      v
  RETARGET        ASAP scripts/data_process/fit_smpl_motion.py              (env: hvgym, CPU)
@@ -70,7 +70,7 @@ The full runbook, with every command, its duration and how to check it, is [`doc
 
 1. **Record** the move (`capture/RECORDING.md`).
 2. **TRAM**: three commands turn the video into SMPL motion.
-3. **Convert**: `python capture/convert_tram_to_asap.py <name> --fps 30`.
+3. **Convert**: `python capture/convert_tram_to_asap.py <name> --fps 30 --out-dir /tmp/<name>_npz` (a staging folder; step 4 copies from it).
 4. **Retarget** to the G1 with ASAP's `fit_smpl_motion.py` (it overwrites every clip in its folder: isolate yours first).
 5. **Check and ground**: `check_reference.py` flags floating feet, lean, fast or limit-bound joints; `ground_reference.py` puts the lower foot on the floor in every frame.
 6. **Train stage 1**: `MOTION_PKL=... PROJECT=... ITERATIONS=20000 bash train/stage1_pretrain.sh`.

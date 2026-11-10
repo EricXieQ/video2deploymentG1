@@ -22,9 +22,9 @@ Usage:
   --out-dir       where <name>_amass.npz is written
                   (default: $ASAP_ROOT/humanoidverse/data/motions/raw_tairantestbed_smpl)
 
-Example:
-  python convert_tram_to_asap.py IMG_7483
-  python convert_tram_to_asap.py Eric_dab --fps 60
+Example (stage the npz outside ASAP; docs/PIPELINE.md step 4 copies it in):
+  python convert_tram_to_asap.py IMG_7483 --out-dir /tmp/IMG_7483_npz
+  python convert_tram_to_asap.py Eric_dab --fps 60 --out-dir /tmp/Eric_dab_npz
 
 Origin: the author's own script tram/convert_tram_to_asap.py (untracked in the
 TRAM checkout), copied into video2deploymentG1. The only change is that the two
