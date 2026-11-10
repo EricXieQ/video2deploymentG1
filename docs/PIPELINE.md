@@ -64,14 +64,17 @@ It reads TRAM's camera-frame track, turns it 90 degrees to Z-up, zeroes X and Y 
 
 ```bash
 conda activate hvgym && cd $ASAP_ROOT            # must be the ASAP root: the output name depends on the path
-mkdir -p humanoidverse/data/motions/raw_tairantestbed_smpl
-cp /tmp/my_motion_npz/my_motion_amass.npz humanoidverse/data/motions/raw_tairantestbed_smpl/
+RAW=humanoidverse/data/motions/raw_tairantestbed_smpl
+mkdir -p /tmp/raw_npz_aside && mv $RAW/*.npz /tmp/raw_npz_aside/   # isolate: the script retargets every npz in $RAW
+cp /tmp/my_motion_npz/my_motion_amass.npz $RAW/
 python scripts/data_process/fit_smpl_shape.py  +robot=g1/g1_29dof_anneal_23dof   # once per robot
 python scripts/data_process/fit_smpl_motion.py +robot=g1/g1_29dof_anneal_23dof
+mv /tmp/raw_npz_aside/*.npz $RAW/ && rmdir /tmp/raw_npz_aside      # put the other clips back
+git status --porcelain --untracked-files=no      # must print nothing: the pinned clone is unchanged
 python scripts/vis/vis_q_mj.py +robot=g1/g1_29dof_anneal_23dof \
     +visualize_motion_file=humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_my_motion_amass.pkl
 ```
-- **Trap:** `fit_smpl_motion.py` re-retargets **every** npz in `raw_tairantestbed_smpl/` and overwrites the existing pkls. The pinned fork ships 51 of ASAP's own clips there. Back up `singles/`, or move the other npz files out while you retarget.
+- **Trap:** `fit_smpl_motion.py` re-retargets **every** npz in `raw_tairantestbed_smpl/` (a hard-coded glob) and overwrites their pkls in `singles/`. The pinned fork ships 51 of ASAP's own clips there, tracked in git, so the block moves every other npz aside while it runs and puts them back afterwards. If the `git status` line prints anything, `git checkout -- humanoidverse/data/motions` restores the fork's files; otherwise `setup/bootstrap.sh` will refuse the dirty clone. The new npz and pkl stay as untracked files.
 - It optimizes joint angles for 1000 steps to match 14 joint positions, smoothing after each step, and grounds **one** frame only (the lowest one).
 - **Time:** about 10 to 25 s per clip on the CPU.
 - **Check:** `vis_q_mj.py` playback.
@@ -89,7 +92,7 @@ python $V2D/capture/check_reference.py  --asap-root $ASAP_ROOT ${PKL%.pkl}_groun
 `ground_reference.py` shifts the whole body vertically on every frame so the lower ankle link sits exactly at 0.035 m (the height of that link when the G1 stands flat-footed). Rotations, joint angles and timing are untouched.
 
 - **Pass:** lowest foot constant within about 1 cm; pelvis tilt under about 15 degrees when standing quietly; no joint parked at a limit.
-- Grounding fixes floating feet. It does **not** fix a forward lean: every captain clip so far retargets with an 18 to 27 degree pelvis tilt, cause not established. Train anyway if the motion looks right; note the WARN.
+- Grounding fixes floating feet. It does **not** fix a forward lean: every clip the author has captured so far retargets with an 18 to 27 degree pelvis tilt, cause not established. Train anyway if the motion looks right; note the WARN.
 - **Time:** seconds.
 
 ## Step 6. Training, stage 1 from scratch
@@ -129,9 +132,11 @@ python $V2D/deploy/export_policy.py --ckpt logs/MyMotion/<stage2-run>/model_N.pt
 ```
 `eval_agent.py` opens a viewer by default (`headless=False`, 1 robot); pass `headless=True` on a machine without a display. `export_policy.py` wraps the checkpoint's actor as a TorchScript `policy.pt` that takes rl_sar's 376 inputs. `--verify` checks every weight tensor and compares the exported policy with an independent re-implementation on random inputs.
 
-Then rename the top-level key of the copied `config.yaml` to `g1/asap_my_motion:`.
+`--config` copies the template next to `policy.pt`. Like `policy.pt`, an existing `config.yaml` there is only replaced with `--force`, so `export_policy.py` stops with an error rather than overwrite your edits. To re-export a newer checkpoint into a folder whose `config.yaml` you have already edited, pass `--force` and leave out `--config`.
 
-- **History convention:** the wrapper keeps the dab's shipped layout ("A"); a corrected layout ("B") exists on an rl_sar branch but failed its MuJoCo test. See `docs/TROUBLESHOOTING.md`.
+Then rename the top-level key of the copied `config.yaml` to `g1/asap_my_motion:` and replace its `motion_length` placeholder (step 9).
+
+- **History convention:** the wrapper keeps the dab's shipped layout ("A"); a corrected layout ("B") exists on a local rl_sar branch, not yet published, but failed its MuJoCo test. See `docs/TROUBLESHOOTING.md`.
 
 ## Step 9. rl_sar integration
 

@@ -4,16 +4,17 @@
 # NOTICE OF CHANGES. Derived from policy/g1/asap_dab/config.yaml in
 # https://github.com/EricXieQ/rl_sar_g1_deployment (Apache-2.0), branch jetson-deploy,
 # commit 314b2cb. Changes for video2deploymentG1: the top-level key is a placeholder,
-# the header comment is rewritten for any motion, and every key that must match
+# the header comment is rewritten for any motion, every key that must match
 # training carries a "MUST MATCH" or "DEPLOY-ONLY" comment, and the motion_length key
-# (added on rl_sar branch fm/rlsar-motion-length-config-b1, b70d18d) is included.
-# All other values are unchanged.
+# (added on a local rl_sar branch, not yet published, commit b70d18d) is included
+# as a non-numeric placeholder. All other values are unchanged.
 #
 # rl_sar policy config for an ASAP motion-tracking policy exported with
 # deploy/export_policy.py. Copy this file to
 #     $RL_SAR_ROOT/policy/g1/asap_<name>/config.yaml
-# next to policy.pt and rename the top-level key below to g1/asap_<name>:
-# (it must equal "<robot>/<folder>", the path rl_sar loads).
+# next to policy.pt, rename the top-level key below to g1/asap_<name>:
+# (it must equal "<robot>/<folder>", the path rl_sar loads), and replace the
+# REPLACE_WITH_CLIP_SECONDS placeholder of motion_length with the clip's length.
 #
 # What makes an ASAP policy work in rl_sar:
 #   - observations in exactly this order, term priority, history [0,1,2,3]
@@ -30,13 +31,15 @@ g1/asap_REPLACE_WITH_NAME:
 
   # MUST MATCH the clip used in training: its length in seconds as ASAP's motion
   # library counts it, (frames - 1) / fps of the retargeted .pkl; check_reference.py
-  # prints it on its "length" line (dab: 179 frames -> 5.93; Eric_moving_arms: 189 -> 6.27).
+  # prints it on its "length" line. Example, the dab: 179 frames at 30 fps ->
+  # (179 - 1) / 30 = 5.93 (Eric_moving_arms: 189 frames -> 6.27).
   # rl_sar uses it for the phase input (phase = t / motion_length) and to hand back
   # to walking at phase 1. Too short cuts the motion off; too long runs the phase slow.
-  # Without a positive number here rl_sar falls back to 5.93 and prints a
-  # "[DAB] ... no positive motion_length" warning at entry; check the
-  # "[DAB] motion_length = ... s" line in the console before trusting a run.
-  motion_length: 5.93
+  # The placeholder is deliberately not a number: until it is replaced, rl_sar falls
+  # back to the dab's 5.93 and prints a "[DAB] ... no positive motion_length" warning
+  # at entry; check the "[DAB] motion_length = ... s" line in the console before
+  # trusting a run.
+  motion_length: REPLACE_WITH_CLIP_SECONDS
 
   # 4-frame term-priority history of [actions(29), ang_vel(3), dof_pos(29),
   # dof_vel(29), gravity_vec(3), phase(1)] = 94 floats per frame -> 376 total.

@@ -19,7 +19,7 @@ Clip: `wall_background_dab`, 1280x720 at 30 fps, 179 frames (5.97 s of video; 5.
 Checks done when building this repository:
 - `policy.pt` passes `deploy/export_policy.py`'s verifier against the v6 checkpoint (8 of 8 weight tensors equal; outputs match an independent re-implementation to 2e-7 relative). Re-exporting the checkpoint with `export_policy.py` gives a policy with identical outputs.
 - Converting TRAM's result for this clip again with `capture/convert_tram_to_asap.py` reproduces the npz byte for byte.
-- `capture/check_reference.py` on the pkl: lowest foot 4.5 to 9.7 cm above the floor (5.2 cm range), pelvis tilt 22 degrees on average. The dab was trained on this floating, leaning reference.
+- `capture/check_reference.py` on the pkl: lower ankle_roll link at 4.5 to 9.7 cm, i.e. 1 to 6 cm above its flat-foot height of 0.035 m (5.2 cm range), pelvis tilt 22 degrees on average. The dab was trained on this floating, leaning reference.
 
 The checkpoint itself (`model_20000.pt`, 9.8 MB with optimizer state) is not in the repository.
 

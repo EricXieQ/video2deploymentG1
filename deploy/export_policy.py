@@ -20,7 +20,8 @@
 #   - new --verify: compares the saved TorchScript policy with an independent,
 #     loop-based re-implementation of the observation mapping and of the
 #     checkpoint's MLP, on random inputs, and checks every weight tensor;
-#   - --config optionally copies a policy config.yaml next to policy.pt;
+#   - --config optionally copies a policy config.yaml next to policy.pt, and like
+#     policy.pt never replaces an existing one without --force;
 #   - docstrings rewritten to be motion-agnostic.
 #   The wrapper module (RlSarASAPWrapper) and its input/output layout are unchanged,
 #   so a policy.pt exported here is interchangeable with one from the original script.
@@ -259,17 +260,23 @@ def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--ckpt", required=True, help="ASAP checkpoint model_N.pt")
     p.add_argument("--out", required=True, help="output TorchScript policy.pt")
-    p.add_argument("--config", help="optional config.yaml to copy next to policy.pt")
+    p.add_argument("--config", help="optional config.yaml to copy next to policy.pt; "
+                   "an existing config.yaml there is kept unless --force is given")
     p.add_argument("--verify", action="store_true", help="check policy.pt against the checkpoint")
     p.add_argument("--n", type=int, default=256, help="random inputs for --verify (default %(default)s)")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--tol", type=float, default=1e-5, help="max output difference relative to max(1, largest output) (default %(default)g)")
-    p.add_argument("--force", action="store_true", help="overwrite an existing --out")
+    p.add_argument("--force", action="store_true",
+                   help="overwrite an existing --out and, with --config, an existing config.yaml beside it")
     args = p.parse_args(argv)
 
-    if os.path.exists(args.out) and not args.force:
-        p.error(f"{args.out} exists; pass --force to overwrite")
-    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
+    out_dir = os.path.dirname(os.path.abspath(args.out))
+    config_dst = os.path.join(out_dir, "config.yaml")
+    copy_config = bool(args.config) and os.path.abspath(args.config) != config_dst
+    for path in [args.out] + ([config_dst] if copy_config else []):
+        if os.path.exists(path) and not args.force:
+            p.error(f"{path} exists; pass --force to overwrite")
+    os.makedirs(out_dir, exist_ok=True)
 
     print(f"checkpoint {args.ckpt}")
     actor_state = load_actor_state(args.ckpt)
@@ -279,11 +286,9 @@ def main(argv=None) -> int:
     scripted.save(args.out)
     print(f"saved      {args.out}")
 
-    if args.config:
-        dst = os.path.join(os.path.dirname(os.path.abspath(args.out)), "config.yaml")
-        if os.path.abspath(args.config) != dst:
-            shutil.copyfile(args.config, dst)
-            print(f"config     {dst}")
+    if copy_config:
+        shutil.copyfile(args.config, config_dst)
+        print(f"config     {config_dst}")
 
     if args.verify:
         print("verify")

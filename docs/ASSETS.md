@@ -1,8 +1,8 @@
 # Inputs used by the rehearsal that are not in this repository
 
-The rehearsal (`docs/REHEARSAL_moving_arms.md`) ran from a clean clone of the public ASAP fork at tag `dab-v6-recipe`. That fork does not ship the files below. They were copied, read-only, from the captain's local ASAP checkout into the clone, at the same relative paths.
+The rehearsal (`docs/REHEARSAL_moving_arms.md`) ran from a clean clone of the public ASAP fork at tag `dab-v6-recipe`. That fork does not ship the files below. They were copied, read-only, from the author's local ASAP checkout into the clone, at the same relative paths.
 
-All of them are **user-supplied, not in the repo**. To repeat the rehearsal, produce your own (setup/ASSETS.md, docs/PIPELINE.md steps 1 to 4) or obtain them from the captain.
+All of them are **user-supplied, not in the repo**. To repeat the rehearsal, produce your own (setup/ASSETS.md, docs/PIPELINE.md steps 1 to 4) or obtain them from the author.
 
 | File (relative to the ASAP checkout) | sha256 | Why it was needed |
 |---|---|---|
@@ -12,7 +12,7 @@ All of them are **user-supplied, not in the repo**. To repeat the rehearsal, pro
 
 Not copied: the SMPL model files (`humanoidverse/data/smpl/`). Steps 5 to 8 do not need them; only retargeting (step 4) does.
 
-Generated during the rehearsal (also not in the repository; kept in the rehearsal hand-off folder named in the rehearsal doc):
+Generated during the rehearsal (also not in the repository; kept in the rehearsal hand-off folder, which is not published):
 
 | File | sha256 |
 |---|---|

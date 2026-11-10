@@ -2,8 +2,9 @@
 """Put the reference motion's feet on the floor, frame by frame.
 
 TRAM's per-frame height is noisy and ASAP's retargeter grounds only one frame,
-so retargeted references float: the dab's lower foot sat 4.5 to 9.7 cm above
-the floor. A policy trained on that learns to track a floating ghost.
+so retargeted references float: the dab's lower ankle_roll link sat at 4.5 to
+9.7 cm, i.e. 1 to 6 cm above its flat-foot height of 0.035 m. A policy trained
+on that learns to track a floating ghost.
 
 This script applies, to every frame t, a rigid vertical shift of the whole body:
 
@@ -13,7 +14,7 @@ This script applies, to every frame t, a rigid vertical shift of the whole body:
 so the lower ankle_roll link sits exactly at `floor` (0.035 m by default, the
 height of that link when the G1 stands flat-footed in Isaac Gym). Rotations,
 joint angles, X, Y, timing and fps are untouched. This is the same dz the
-grounded dab overlay used for display (data/asap-v6-dab-overlay-grounded),
+author's grounded dab overlay (a display-only analysis, not published) used,
 applied to the data instead.
 
 Limits: only the lower foot is pinned. During a real single-leg lift the

@@ -26,7 +26,7 @@ Example:
   python convert_tram_to_asap.py IMG_7483
   python convert_tram_to_asap.py Eric_dab --fps 60
 
-Origin: the captain's own script tram/convert_tram_to_asap.py (untracked in the
+Origin: the author's own script tram/convert_tram_to_asap.py (untracked in the
 TRAM checkout), copied into video2deploymentG1. The only change is that the two
 hard-coded home-directory paths became the --tram-results and --out-dir
 arguments; the conversion itself is unchanged and produces bit-identical arrays

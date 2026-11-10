@@ -40,7 +40,7 @@ python capture/check_reference.py  ${PKL%.pkl}_grounded.pkl
 | joint limits | WARN waist pitch at its 0.52 rad limit for 1.03 s | same |
 | start / end pose vs walking stance | WARN 0.52 rad (waist pitch) / PASS 0.49 rad | same |
 
-The grounding shift `dz` ranged from -10.7 to -1.0 cm (mean -5.6 cm; the reference was moved down on every frame). Its largest frame-to-frame change was 11.7 mm. Both expected warnings appeared (floating root 9.4 cm, tilt 22.5 deg), and the foot is constant within 1 cm after grounding. The tilt and the waist pitch parked at its limit are what remains: they come from retargeting, not from the floor. The same FK gives the dab pkl's known numbers (lower foot 4.5 to 9.7 cm, root 0.800 to 0.851 m), which cross-checks `check_reference.py` against the earlier overlay analysis.
+The grounding shift `dz` ranged from -10.7 to -1.0 cm (mean -5.6 cm; the reference was moved down on every frame). Its largest frame-to-frame change was 11.7 mm. Both expected warnings appeared (floating root 9.4 cm, tilt 22.5 deg), and the foot is constant within 1 cm after grounding. The tilt and the waist pitch parked at its limit are what remains: they come from retargeting, not from the floor. The same FK gives the dab pkl's known numbers (lower ankle_roll link at 4.5 to 9.7 cm, i.e. 1 to 6 cm above its flat-foot height; root 0.800 to 0.851 m), which cross-checks `check_reference.py` against the earlier overlay analysis.
 
 ## Step 6. Stage 1 from scratch
 
@@ -66,9 +66,9 @@ TensorBoard, mean over the 50 iterations up to each mark:
 
 The episode length falls after iteration 1000 because the termination curriculum tightens the "too far from the reference" threshold from 1.5 m to 0.3 m. The per-step tracking error keeps falling throughout. The dab's v1 shows the same dip (108 to 81) and recovered to about 120 by iteration 10,000. The rehearsal's errors at 3,000 are close to the dab's. Non-finite values: none.
 
-**Headless evaluation** (Isaac Gym, 1 robot, no pushes, seed 0; the camera recorder from `data/asap-v6-dab-video/tools`, run unchanged): 10 of 10 episodes ran the full clip without a fall. But the robot tracks **crouched**: minimum base height about 0.63 m, against about 0.79 m in the reference. Mean body-position error 0.138 m, joint error 0.42 rad. With pushes (3 pushes over 6 episodes), 4 of 6 episodes ended early.
+**Headless evaluation** (Isaac Gym, 1 robot, no pushes, seed 0; the author's camera-recorder tool, not published, run unchanged): 10 of 10 episodes ran the full clip without a fall. But the robot tracks **crouched**: minimum base height about 0.63 m, against about 0.79 m in the reference. Mean body-position error 0.138 m, joint error 0.42 rad. With pushes (3 pushes over 6 episodes), 4 of 6 episodes ended early.
 
-Stills (in the hand-off folder `eval/`): `stage1_model3000_t{00.50,02.00,03.50,05.00}s.png`, contact sheet `stage1_contact.png`; curves `stage1_curves.png`.
+Stills (in the hand-off folder's `eval/`, not published): `stage1_model3000_t{00.50,02.00,03.50,05.00}s.png`, contact sheet `stage1_contact.png`; curves `stage1_curves.png`.
 
 ## Step 7. Stage 2, deployment fine-tune
 
@@ -107,7 +107,7 @@ Isaac Gym's ONNX export (`eval_agent.py`) was not run; it is a record-only artef
 
 ## Hand-off for the MuJoCo gate
 
-In `/home/eric/Project/humanoid/firstmate/data/v2d-repo-skeleton-rehearsal-a1/rehearsal/` (22 MB, `SHA256SUMS` inside):
+In the rehearsal hand-off folder, which is not published (22 MB, `SHA256SUMS` inside):
 
 ```
 policy/g1/asap_moving_arms/{policy.pt, config.yaml, README.md}     rl_sar layout, motion_length 6.27
@@ -125,11 +125,11 @@ eval/   curves, stills, contact sheets, TensorBoard summaries
 | `checkpoints/stage2/model_4500.pt` | `9f3c8496c3f0f532649fc25b0feae6ab656224b1ba35fc669c0a873cbe6885cb` |
 | grounded pkl | `105180624c6d63ca03213101074dd1a31df3e4152296fee101c5a230d74a3d4f` |
 
-The full run directories (every checkpoint, TensorBoard events, Hydra logs; 457 MB) stayed in the worker's scratch clone of the fork. They are disposable.
+The full run directories (every checkpoint, TensorBoard events, Hydra logs; 457 MB) stayed in a scratch clone of the fork and are not published. They are disposable.
 
 ## Reproducibility notes
 
 - `import humanoidverse` resolved into the public clone before every Isaac Gym run (the stage scripts check it; outputs recorded in the logs).
 - The public fork at `dab-v6-recipe` had every code and config file the two stages need: the reward `reward_motion_tracking_dm_2real_v5`, `off_trajectory_entry_fraction`, `max_learning_rate`, the NaN guard and the fixed `domain_rand_base.yaml`.
-- Not on the fork, and not needed for training: `finetune_dab.sh` (v3; copied into `train/dab_as_run/` from the captain's working copy), the frozen `domain_rand_v6_grounded.yaml` (identical values to `domain_rand_base.yaml`), and the captain's uncommitted `eval_agent.py`, `sim2sim/` and converter scripts.
+- Not on the fork, and not needed for training: `finetune_dab.sh` (v3; copied into `train/dab_as_run/` from the author's working copy), the frozen `domain_rand_v6_grounded.yaml` (identical values to `domain_rand_base.yaml`), and the author's uncommitted `eval_agent.py`, `sim2sim/` and converter scripts.
 - `capture/convert_tram_to_asap.py` re-converted the TRAM results of Eric_moving_arms and wall_background_dab to npz files that are byte-identical (same sha256) to the originals. It must run in the `tram` env (numpy 2).

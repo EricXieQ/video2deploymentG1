@@ -17,4 +17,4 @@ Licences in short:
 - **TRAM's code** is MIT, but the models it downloads (SAM, Detectron2, DEVA, DROID-SLAM, ZoeDepth, the VIMO checkpoint) have their own licences.
 - **`smpl_sim`** (PHC's helper, used by retargeting) declares no licence in its package metadata. This repository only installs it (`setup/env_hvgym.yml`) and copies nothing from it.
 
-What this repository does ship: the dab's SMPL parameter file (`motions/dab/wall_background_dab_amass.npz`, the captain's own motion, no body-model data), its retargeted robot motion, and its exported policy. See `motions/dab/README.md`.
+What this repository does ship: the dab's SMPL parameter file (`motions/dab/wall_background_dab_amass.npz`, the author's own motion, no body-model data), its retargeted robot motion, and its exported policy. See `motions/dab/README.md`.

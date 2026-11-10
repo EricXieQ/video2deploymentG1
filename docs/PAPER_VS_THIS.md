@@ -16,7 +16,7 @@ The paper's Table VI against what the dab ran (v1 to v6, `config/domain_rand/dom
 | Link mass | not in Table VI | x U(0.8, 1.2) | same as dab |
 | Random torque noise | not in Table VI | 0.1 x torque limit, scaled U(0.5, 1.5) | same as dab |
 
-So the dab randomized more broadly than the paper in every term except the lowest friction. ASAP's own README trains with randomization off (`+domain_rand=NO_domain_rand`); turning it on was the captain's choice.
+So the dab randomized more broadly than the paper in every term except the lowest friction. ASAP's own README trains with randomization off (`+domain_rand=NO_domain_rand`); turning it on was the author's choice.
 
 ### Deliberate deviation: wider control delay
 

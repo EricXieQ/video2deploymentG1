@@ -5,11 +5,11 @@ Files derived from rl_sar (https://github.com/EricXieQ/rl_sar_g1_deployment, a f
 https://github.com/fan-ziqi/rl_sar), licensed under the Apache License, Version 2.0
 (deploy/LICENSE-APACHE-2.0). Each carries a notice of changes in its header or README.
   deploy/export_policy.py                 from policy/g1/asap_dab/export_wrapper.py @ 314b2cb (modified)
-  deploy/policy_template/config.yaml      from policy/g1/asap_dab/config.yaml @ 314b2cb (modified: comments, placeholder key)
+  deploy/policy_template/config.yaml      from policy/g1/asap_dab/config.yaml @ 314b2cb (modified: comments, placeholder key and motion_length)
   motions/dab/policy/policy.pt            from policy/g1/asap_dab/policy.pt @ 314b2cb (unchanged)
   motions/dab/policy/config.yaml          from policy/g1/asap_dab/config.yaml @ 314b2cb (unchanged)
 
-Files copied from the captain's ASAP working copy (ASAP is MIT, https://github.com/LeCAR-Lab/ASAP):
+Files copied from the author's ASAP working copy (ASAP is MIT, https://github.com/LeCAR-Lab/ASAP):
   train/dab_as_run/*.sh, train/dab_as_run/*.yaml, motions/dab/train_config_v6.yaml (unchanged)
 
 Third-party projects used but not redistributed: ASAP / HumanoidVerse (MIT), TRAM (MIT; its

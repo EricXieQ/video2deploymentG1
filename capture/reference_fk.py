@@ -29,7 +29,8 @@ DEFAULT_MJCF = "humanoidverse/data/robots/g1/g1_29dof_anneal_23dof_fitmotionONLY
 DEFAULT_ROBOT_YAML = "humanoidverse/config/robot/g1/g1_29dof_anneal_23dof.yaml"
 
 # Median ankle_roll link height of the trained v6 dab policy standing with flat
-# feet in Isaac Gym (data/asap-v6-dab-overlay-grounded, FLOOR = 0.035002 m).
+# feet in Isaac Gym (measured for the author's grounded dab overlay, not
+# published; FLOOR = 0.035002 m).
 # The link origin sits this far above the sole, so "foot on the floor" means
 # the lower ankle_roll link is at this height, not at zero.
 FLOOR_ANKLE_ROLL_Z = 0.035
