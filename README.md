@@ -64,6 +64,12 @@ Pinned commits ([`forks.lock`](forks.lock)):
 | rl_sar fork https://github.com/EricXieQ/rl_sar_g1_deployment | branch `jetson-deploy` | `314b2cb` |
 | TRAM https://github.com/yufu-wang/tram | `main` | `4861c11` |
 
+Check the install with the repository's own tests (CPU only, under a minute; uses the `hvgym` env):
+
+```bash
+bash tests/run_tests.sh
+```
+
 ## Walkthrough
 
 The full runbook, with every command, its duration and how to check it, is [`docs/PIPELINE.md`](docs/PIPELINE.md). In short:
