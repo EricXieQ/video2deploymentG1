@@ -6,7 +6,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 - Isaac Gym runs: always headless with `DISPLAY` unset, `LD_LIBRARY_PATH=$CONDA_PREFIX/lib`, the env's `bin` on `PATH` (ninja), and `PYTHONPATH=$ASAP_ROOT` so the intended ASAP checkout is imported; `train/stage*_*.sh` enforce all four. Checks: `docs/TROUBLESHOOTING.md`.
 - Two Python envs: `hvgym` (Python 3.8, numpy 1.x: retarget, train, export, `capture/check_reference.py`, `capture/ground_reference.py`) and `tram` (numpy 2: TRAM and `capture/convert_tram_to_asap.py`, because TRAM saves results with numpy 2).
 - Never commit videos, faces, other people's motions, SMPL model files or checkpoints over 10 MB (`setup/ASSETS.md`). Files derived from rl_sar stay Apache-2.0 with a notice of changes; list them in `NOTICE`.
-- No test suite yet. Regression checks used so far: re-convert a TRAM result and compare the npz (`capture/convert_tram_to_asap.py`), `deploy/export_policy.py --verify` on `motions/dab/policy/policy.pt` against the dab v6 checkpoint, and `check_reference.py` numbers for the dab pkl in `motions/dab/README.md`.
+- No test suite yet. Regression checks used so far: re-convert a TRAM result and compare the npz (`capture/convert_tram_to_asap.py`), `verify()` from `deploy/export_policy.py` called directly on the shipped `motions/dab/policy/policy.pt` against the dab v6 checkpoint (`python -c "import sys; sys.path.insert(0,'deploy'); import export_policy as e; sys.exit(not e.verify('motions/dab/policy/policy.pt', e.load_actor_state('<v6 model_20000.pt>'), 256, 0, 1e-5))"`; the script itself always re-exports to `--out`, so never point `--out` at a shipped file), and `check_reference.py` numbers for the dab pkl in `motions/dab/README.md`.
 
 ## Maintaining this file
 

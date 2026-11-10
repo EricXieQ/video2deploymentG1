@@ -69,12 +69,12 @@ mkdir -p /tmp/raw_npz_aside && mv $RAW/*.npz /tmp/raw_npz_aside/   # isolate: th
 cp /tmp/my_motion_npz/my_motion_amass.npz $RAW/
 python scripts/data_process/fit_smpl_shape.py  +robot=g1/g1_29dof_anneal_23dof   # once per robot
 python scripts/data_process/fit_smpl_motion.py +robot=g1/g1_29dof_anneal_23dof
-mv /tmp/raw_npz_aside/*.npz $RAW/ && rmdir /tmp/raw_npz_aside      # put the other clips back
+mv -n /tmp/raw_npz_aside/*.npz $RAW/; rm -rf /tmp/raw_npz_aside   # put the other clips back; never over the new npz
 git status --porcelain --untracked-files=no      # must print nothing: the pinned clone is unchanged
 python scripts/vis/vis_q_mj.py +robot=g1/g1_29dof_anneal_23dof \
     +visualize_motion_file=humanoidverse/data/motions/g1_29dof_anneal_23dof/TairanTestbed/singles/0-motions_raw_tairantestbed_smpl_my_motion_amass.pkl
 ```
-- **Trap:** `fit_smpl_motion.py` re-retargets **every** npz in `raw_tairantestbed_smpl/` (a hard-coded glob) and overwrites their pkls in `singles/`. The pinned fork ships 51 of ASAP's own clips there, tracked in git, so the block moves every other npz aside while it runs and puts them back afterwards. If the `git status` line prints anything, `git checkout -- humanoidverse/data/motions` restores the fork's files; otherwise `setup/bootstrap.sh` will refuse the dirty clone. The new npz and pkl stay as untracked files.
+- **Trap:** `fit_smpl_motion.py` re-retargets **every** npz in `raw_tairantestbed_smpl/` (a hard-coded glob) and overwrites their pkls in `singles/`. The pinned fork ships 51 of ASAP's own clips there, tracked in git, so the block moves every other npz aside while it runs and puts them back afterwards without replacing the npz just retargeted (an older copy of the same clip, from an earlier conversion, is discarded). If the `git status` line prints anything, `git checkout -- humanoidverse/data/motions` restores the fork's files; otherwise `setup/bootstrap.sh` will refuse the dirty clone. The new npz and pkl stay as untracked files.
 - It optimizes joint angles for 1000 steps to match 14 joint positions, smoothing after each step, and grounds **one** frame only (the lowest one).
 - **Time:** about 10 to 25 s per clip on the CPU.
 - **Check:** `vis_q_mj.py` playback.
