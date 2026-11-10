@@ -6,7 +6,7 @@ This repository holds the scripts, configurations and notes that glue together t
 
 **Motions so far**
 - **The dab**: taken from a phone video all the way to the real robot. Files, hashes and the full training history: [`motions/dab/`](motions/dab/README.md).
-- **Rehearsal on `Eric_moving_arms`**: the two-stage training recipe, run end to end from the public fork, up to an exported policy. See [`docs/REHEARSAL_moving_arms.md`](docs/REHEARSAL_moving_arms.md).
+- **Rehearsal on `Eric_moving_arms`**: the two-stage training recipe, run end to end from the public fork, up to an exported policy. Both stages trained stably; with the short test budget (1.5 GPU-hours) the policy still falls in 4 of 10 simulated runs, so it is a plumbing test, not a usable policy. See [`docs/REHEARSAL_moving_arms.md`](docs/REHEARSAL_moving_arms.md).
 - **The "6-7" gesture**: next. Recording notes in [`capture/RECORDING.md`](capture/RECORDING.md).
 
 ## The pipeline
