@@ -1,0 +1,137 @@
+# Copyright 2026 EricXieQ. Licensed under the Apache License, Version 2.0
+# (deploy/LICENSE-APACHE-2.0).
+#
+# NOTICE OF CHANGES. Derived from policy/g1/asap_dab/config.yaml in
+# https://github.com/EricXieQ/rl_sar_g1_deployment (Apache-2.0), branch jetson-deploy,
+# commit 314b2cb. Changes for video2deploymentG1: the top-level key is a placeholder,
+# the header comment is rewritten for any motion, and every key that must match
+# training carries a "MUST MATCH" or "DEPLOY-ONLY" comment. All values are unchanged.
+#
+# rl_sar policy config for an ASAP motion-tracking policy exported with
+# deploy/export_policy.py. Copy this file to
+#     $RL_SAR_ROOT/policy/g1/asap_<name>/config.yaml
+# next to policy.pt and rename the top-level key below to g1/asap_<name>:
+# (it must equal "<robot>/<folder>", the path rl_sar loads).
+#
+# What makes an ASAP policy work in rl_sar:
+#   - observations in exactly this order, term priority, history [0,1,2,3]
+#     (policy.pt slices its 376 inputs assuming this layout);
+#   - gains, action scale, observation scales and default pose equal to training;
+#   - the phase clock: rl_sar computes
+#         phase = ticks * dt * decimation / motion_length
+#     and motion_length is NOT in this file on jetson-deploy 314b2cb: it is
+#     hard-coded to 5.93 s (the dab) in fsm_g1.hpp. See deploy/FSM_INTEGRATION.md.
+
+g1/asap_REPLACE_WITH_NAME:
+  model_name: "policy.pt"
+
+  # 4-frame term-priority history of [actions(29), ang_vel(3), dof_pos(29),
+  # dof_vel(29), gravity_vec(3), phase(1)] = 94 floats per frame -> 376 total.
+  num_observations: 376
+  # MUST MATCH policy.pt: this order, with the two lines below. Do not reorder.
+  observations: ["actions", "ang_vel", "dof_pos", "dof_vel", "gravity_vec", "RoboMimic_Deploy/phase"]
+  observations_history: [0, 1, 2, 3]   # 0 = newest
+  observations_history_priority: "term"
+  clip_obs: 100.0
+
+  # Action clipping is symmetric. The wrapper outputs zero on wrist joints
+  # so they will be inside any reasonable bound, but keep it tight anyway.
+  # NOTE (2026-07-16): the 2026-07-14 R_AnkleRoll (idx 11) stopgap clamp (+-0.2) was
+  # REMOVED to test the v6 "grounded" policy (model_20000) with its real ankle output.
+  # If the ankle wind-up returns (idx 11 commands >>15deg -> ~30Nm -> firmware power-
+  # cut), re-clamp idx 11 to -0.2 / 0.2 in the lower/upper arrays below.
+  # Clipping at +-100 means effectively off. The dab v3 needed idx 11 (right ankle roll)
+  # clamped to +-0.2; v6 and later do not.
+  clip_actions_lower: [-100.0, -100.0, -100.0, -100.0, -100.0, -100.0,
+                       -100.0, -100.0, -100.0, -100.0, -100.0, -100.0,
+                       -100.0, -100.0, -100.0,
+                       -100.0, -100.0, -100.0, -100.0, -100.0, -100.0, -100.0,
+                       -100.0, -100.0, -100.0, -100.0, -100.0, -100.0, -100.0]
+  clip_actions_upper: [100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+                       100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+                       100.0, 100.0, 100.0,
+                       100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+                       100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0]
+
+  # PD gains used at runtime. ASAP training used these exact values.
+  # MUST MATCH training gains (robot.control.stiffness in the ASAP robot config); wrists
+  # (indices 19-21, 26-28) are not trained and are held with kp 10.
+  rl_kp: [100.0, 100.0, 100.0, 200.0, 20.0, 20.0,
+          100.0, 100.0, 100.0, 200.0, 20.0, 20.0,
+          400.0, 400.0, 400.0,
+          90.0, 60.0, 20.0, 60.0, 10.0, 10.0, 10.0,
+          90.0, 60.0, 20.0, 60.0, 10.0, 10.0, 10.0]
+  rl_kd: [2.5, 2.5, 2.5, 5.0, 0.2, 0.1,
+          2.5, 2.5, 2.5, 5.0, 0.2, 0.1,
+          5.0, 5.0, 5.0,
+          2.0, 1.0, 0.4, 1.0, 0.2, 0.2, 0.2,
+          2.0, 1.0, 0.4, 1.0, 0.2, 0.2, 0.2]
+  fixed_kp: [100.0, 100.0, 100.0, 150.0, 40.0, 40.0,
+             100.0, 100.0, 100.0, 150.0, 40.0, 40.0,
+             300.0, 300.0, 300.0,
+             100.0, 100.0, 50.0, 50.0, 20.0, 20.0, 20.0,
+             100.0, 100.0, 50.0, 50.0, 20.0, 20.0, 20.0]
+  fixed_kd: [2.0, 2.0, 2.0, 4.0, 2.0, 2.0,
+             2.0, 2.0, 2.0, 4.0, 2.0, 2.0,
+             3.0, 3.0, 3.0,
+             2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0,
+             2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0]
+
+  num_of_dofs: 29
+
+  # action_scale is 0.25 across the board (ASAP's training value).
+  # MUST MATCH training: robot.control.action_scale = 0.25.
+  action_scale: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25,
+                 0.25, 0.25, 0.25, 0.25, 0.25, 0.25,
+                 0.25, 0.25, 0.25,
+                 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25,
+                 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+  wheel_indices: []
+
+  # Observation scales (must match what ASAP used during training).
+  lin_vel_scale: 1.0      # unused, ASAP doesn't observe lin_vel
+  # MUST MATCH the ASAP obs scales (base_ang_vel 0.25, dof_vel 0.05).
+  ang_vel_scale: 0.25     # ASAP scale
+  dof_pos_scale: 1.0      # ASAP scale
+  dof_vel_scale: 0.05     # ASAP scale
+  commands_scale: [1.0, 1.0, 1.0]  # unused, no commands obs
+
+  torque_limits: [88.0, 88.0, 88.0, 139.0, 50.0, 50.0,
+                  88.0, 88.0, 88.0, 139.0, 50.0, 50.0,
+                  88.0, 50.0, 50.0,
+                  25.0, 25.0, 25.0, 25.0, 5.0, 5.0, 5.0,
+                  25.0, 25.0, 25.0, 25.0, 5.0, 5.0, 5.0]
+
+  # Standing pose. ASAP uses these as the "default" the policy learned.
+  # MUST MATCH ASAP default_joint_angles: actions are offsets from this pose.
+  default_dof_pos: [-0.1, 0.0, 0.0, 0.3, -0.2, 0.0,
+                    -0.1, 0.0, 0.0, 0.3, -0.2, 0.0,
+                    0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+  # Identity joint mapping (rl_sar SDK order == ASAP training order for G1).
+  # MUST MATCH: identity, rl_sar SDK order == ASAP order for the G1.
+  joint_mapping: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+
+  # Action smoothing: low-pass filter applied to the policy output to damp
+  # the snappy initial joint motions that destabilize the dab. The dab was
+  # trained without smoothing so going too low changes the motion shape.
+  # Tuning guide:
+  #   1.00 = no smoothing (the trained policy)
+  #   0.50 = strong smoothing, motion is sluggish but very stable
+  #   0.30 = sluggish, motion may not complete
+  # 0.7 is a good first try - removes the worst spikes without losing much.
+  # DEPLOY-ONLY (not trained with): low-pass on the policy output. 0.7 for the dab.
+  action_smooth_alpha: 0.7
+
+  # Entry-only command interpolation. The policy's first action after the
+  # loco->dab switch is a hard step from the standing pose to the dab's opening
+  # pose. When true,z RLControl ramps the command from the hold pose toward the
+  # live policy output over `interp_entry_steps` PD ticks -- ONLY for the entry
+  # -- then applies policy outputs directly so the dab itself stays crisp.
+  # DEPLOY-ONLY: entry ramp from the walking pose, 32 ticks = 160 ms for the dab.
+  interpolate_commands: true
+  # Length of the entry ramp in PD ticks (200Hz => 5ms each). Default is
+  # 8*decimation (32 ticks = 160ms). Increase for a softer/slower entry.
+  interp_entry_steps: 32
